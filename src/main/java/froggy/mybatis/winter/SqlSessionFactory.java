@@ -11,7 +11,7 @@ import org.apache.ibatis.session.defaults.DefaultSqlSessionFactory;
 @Component
 public class SqlSessionFactory extends DefaultSqlSessionFactory {
 
-    public SqlSessionFactory() throws IOException {
+    public SqlSessionFactory() {
         this(loadConfiguration());
     }
 
@@ -19,12 +19,14 @@ public class SqlSessionFactory extends DefaultSqlSessionFactory {
         super(configuration);
     }
 
-    private static Configuration loadConfiguration() throws IOException {
+    private static Configuration loadConfiguration() {
         String resource = "mybatis-config.xml";
-        InputStream inputStream = Resources.getResourceAsStream(resource);
-
-        XMLConfigBuilder parser = new XMLConfigBuilder(inputStream);
-        return parser.parse();
+        try (InputStream inputStream = Resources.getResourceAsStream(resource)) {
+            XMLConfigBuilder parser = new XMLConfigBuilder(inputStream);
+            return parser.parse();
+        } catch (IOException e) {
+            throw new RuntimeException("Failed to load MyBatis configuration: " + resource, e);
+        }
     }
 
 }

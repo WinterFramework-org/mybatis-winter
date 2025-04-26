@@ -1,7 +1,9 @@
 package froggy.mybatis.winter.scan;
 
+import froggy.mybatis.winter.SqlSessionFactory;
 import froggy.mybatis.winter.annotation.Mapper;
 import froggy.mybatis.winter.mapper.MapperFactory;
+import froggy.winterframework.beans.factory.annotation.Autowired;
 import froggy.winterframework.beans.factory.support.BeanDefinitionRegistryPostProcessor;
 import froggy.winterframework.beans.factory.support.BeanFactory;
 import froggy.winterframework.stereotype.Component;
@@ -16,12 +18,19 @@ import java.util.Set;
 @Component
 public class MapperScanner implements BeanDefinitionRegistryPostProcessor {
 
+    private SqlSessionFactory sqlSessionFactory;
+
+    @Autowired
+    public MapperScanner(SqlSessionFactory sqlSessionFactory) {
+        this.sqlSessionFactory = sqlSessionFactory;
+    }
+
     @Override
     public void postProcessBeanDefinitionRegistry(BeanFactory beanFactory) {
         registerMapper(beanFactory);
     }
 
-    public void registerMapper(BeanFactory beanFactory) {
+    private void registerMapper(BeanFactory beanFactory) {
         Set<String> basePackageClassNames = getFullyQualifiedClassNamesByBasePackage();
 
         List<Class<?>> mapperClasses = findMapperClasses(basePackageClassNames);
@@ -29,7 +38,7 @@ public class MapperScanner implements BeanDefinitionRegistryPostProcessor {
         for (Class<?> mapper : mapperClasses) {
             beanFactory.registerSingleton(
                 WinterUtils.resolveSimpleBeanName(mapper),
-                MapperFactory.createMapper(mapper)
+                MapperFactory.createMapper(mapper, sqlSessionFactory)
             );
         }
     }
