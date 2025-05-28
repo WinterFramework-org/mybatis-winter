@@ -22,7 +22,15 @@ public class MapperProxy implements InvocationHandler {
     public Object invoke(Object proxy, Method method, Object[] args) throws Throwable {
         Configuration configuration = sqlSessionFactory.getConfiguration();
         String statementId = mapperInterface.getName() + "." + method.getName();
-        MappedStatement ms = configuration.getMappedStatement(statementId);
+
+        MappedStatement ms = null;
+        try {
+            ms = configuration.getMappedStatement(statementId);
+        } catch (IllegalArgumentException e) {
+            throw new IllegalStateException("Failed to resolve mapped statement for MyBatis mapper method: " +
+                mapperInterface.getSimpleName() + "#" + method.getName() +
+                ". Cause: " + e.getMessage(), e);
+        }
 
         return executeSqlCommand(method, ms, args);
     }
