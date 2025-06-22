@@ -1,6 +1,5 @@
 package froggy.mybatis.winter.scan;
 
-import froggy.mybatis.winter.SqlSessionFactory;
 import froggy.mybatis.winter.annotation.Mapper;
 import froggy.mybatis.winter.mapper.MapperFactory;
 import froggy.winterframework.beans.factory.annotation.Autowired;
@@ -9,6 +8,7 @@ import froggy.winterframework.beans.factory.support.BeanFactory;
 import froggy.winterframework.stereotype.Component;
 import froggy.winterframework.utils.WinterUtils;
 import java.util.Set;
+import org.apache.ibatis.session.SqlSessionFactory;
 
 @Component
 public class MapperScanner implements BeanDefinitionRegistryPostProcessor {
@@ -26,9 +26,7 @@ public class MapperScanner implements BeanDefinitionRegistryPostProcessor {
     }
 
     private void registerMapper(BeanFactory beanFactory) {
-        // TODO: BasePackage 경로 어떻게 찾아올지 구상하기
-        String basePackage = System.getProperty("basePackage");
-        System.out.println("basePackage = " + basePackage);
+        String basePackage = beanFactory.resolveEmbeddedValue("basePackage");
         Set<Class<?>> mapperClasses = WinterUtils.scanTypesAnnotatedWith(Mapper.class,  basePackage);
 
         for (Class<?> mapper : mapperClasses) {
